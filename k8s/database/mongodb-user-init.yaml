@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mongodb-user-init
+  namespace: alphacar
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      containers:
+      - name: mongo-init
+        image: mongo:8.0
+        command:
+        - mongosh
+        - --host
+        - mongodb
+        - -u
+        - admin
+        - -p
+        - "123"
+        - --authenticationDatabase
+        - admin
+        - --eval
+        - |
+          print('Creating user proj...');
+          db = db.getSiblingDB('admin');
+          try {
+            db.createUser({
+              user: 'proj',
+              pwd: '1234',
+              roles: [ { role: 'readWrite', db: 'alphacar' } ]
+            });
+            print('User proj created successfully');
+          } catch (e) {
+            print('User proj creation failed or already exists: ' + e);
+          }
+      restartPolicy: Never

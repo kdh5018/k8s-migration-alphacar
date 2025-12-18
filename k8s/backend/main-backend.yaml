@@ -26,15 +26,27 @@ spec:
           value: "3002"
         - name: SERVICE_NAME
           value: "main-backend"
+        
+        # [삭제됨] 과부하 원인인 OTEL Debug 로그 제거
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           valueFrom:
             configMapKeyRef:
               name: alphacar-env
               key: OTEL_EXPORTER_OTLP_ENDPOINT
-        - name: OTEL_LOG_LEVEL
-          value: "debug"
-        - name: OTEL_DIAG_LEVEL
-          value: "debug"
+        
+        # [핵심] 이중화 DB 연결을 위한 만능 URI 설정 (ConfigMap의 MONGO_URI 사용)
+        - name: MONGO_URI
+          valueFrom:
+            configMapKeyRef:
+              name: alphacar-env
+              key: MONGO_URI
+        - name: MONGODB_URI
+          valueFrom:
+            configMapKeyRef:
+              name: alphacar-env
+              key: MONGO_URI
+        
+        # 기존 설정 유지 (호환성)
         - name: DATABASE_HOST
           valueFrom:
             configMapKeyRef:
@@ -80,7 +92,7 @@ spec:
             memory: "256Mi"
             cpu: "200m"
           limits:
-            memory: "512Mi"
+            memory: "1Gi"  # 안정성을 위해 메모리 한도 상향
             cpu: "500m"
 ---
 apiVersion: v1
@@ -96,6 +108,3 @@ spec:
     targetPort: 3002
     protocol: TCP
   type: ClusterIP
-
-
-

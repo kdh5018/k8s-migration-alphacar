@@ -26,11 +26,43 @@ spec:
           value: "3003"
         - name: SERVICE_NAME
           value: "quote-backend"
-        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        
+        # [핵심] 메인 DB 연결 설정
+        - name: MONGO_URI
           valueFrom:
             configMapKeyRef:
               name: alphacar-env
-              key: OTEL_EXPORTER_OTLP_ENDPOINT
+              key: MONGO_URI
+        - name: MONGODB_URI
+          valueFrom:
+            configMapKeyRef:
+              name: alphacar-env
+              key: MONGO_URI
+        
+        # [추가] 견적(Estimate) DB가 사용할 것으로 추정되는 모든 변수명에 
+        # 성공한 'MONGO_URI' 값을 강제로 주입합니다.
+        - name: ESTIMATE_MONGO_URI
+          valueFrom:
+            configMapKeyRef:
+              name: alphacar-env
+              key: MONGO_URI
+        - name: ESTIMATE_URI
+          valueFrom:
+            configMapKeyRef:
+              name: alphacar-env
+              key: MONGO_URI
+        - name: ESTIMATE_DB_URI
+          valueFrom:
+            configMapKeyRef:
+              name: alphacar-env
+              key: MONGO_URI
+        - name: ESTIMATE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: alphacar-env
+              key: MONGO_URI
+        
+        # 기존 호스트 방식 (하위 호환성)
         - name: DATABASE_HOST
           valueFrom:
             configMapKeyRef:
@@ -61,7 +93,8 @@ spec:
             secretKeyRef:
               name: jwt-secret
               key: secret
-        # Estimate DB 연결 (동일한 MongoDB 사용)
+        
+        # 기존 견적 DB 변수도 유지
         - name: ESTIMATE_DB_HOST
           valueFrom:
             configMapKeyRef:
@@ -87,13 +120,14 @@ spec:
             secretKeyRef:
               name: mongodb-secret
               key: database
+        
         resources:
           requests:
-            memory: "256Mi"
+            memory: "512Mi"
             cpu: "200m"
           limits:
-            memory: "512Mi"
-            cpu: "500m"
+            memory: "1Gi"
+            cpu: "1000m"
 ---
 apiVersion: v1
 kind: Service
@@ -108,4 +142,3 @@ spec:
     targetPort: 3003
     protocol: TCP
   type: ClusterIP
-

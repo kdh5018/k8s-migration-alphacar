@@ -13,6 +13,14 @@ spec:
       labels:
         app: mongodb
     spec:
+      # [추가] 권한 문제 해결을 위한 초기화 컨테이너
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 999:999 /data/db"]
+        volumeMounts:
+        - name: mongodb-data
+          mountPath: /data/db
       containers:
       - name: mongodb
         image: mongo:8.0
@@ -62,4 +70,3 @@ spec:
     targetPort: 27017
     protocol: TCP
   type: ClusterIP
-
